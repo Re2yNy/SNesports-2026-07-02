@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta name="robots" content="noindex, nofollow">
+    <meta charset="UTF-8">
+    <title>Esports Tournament & Ranking</title>
+    <meta property="og:title" content="SN Esports Hub">
+    <meta property="og:description" content="Esports Tournament & Team Rankings">
+    <meta property="og:image" content="thumbnail.png">
+    <style>
+        body { background-color: #f4f6f9; color: #1e293b; font-family: sans-serif; padding: 40px 20px; margin: 0; }
+        .container { max-width: 1100px; margin: 0 auto; width: 100%; box-sizing: border-box; }
+        h1 { margin-bottom: 25px; color: #0f172a; }
+
+        /* 대메뉴 탭 스타일 */
+        .main-tabs { display: flex; gap: 5px; margin-bottom: 30px; border-bottom: 2px solid #cbd5e1; padding-bottom: 0; align-items: flex-end; }
+        .main-tabs .tab-link {
+            padding: 12px 24px; font-weight: bold; font-size: 16px; cursor: pointer;
+            color: #64748b; border-radius: 6px 6px 0 0; border: 1px solid transparent;
+            margin-bottom: -2px; transition: all 0.2s ease; text-decoration: none; display: inline-block;
+        }
+        .main-tabs .tab-link:hover { color: #1e293b; background-color: #e2e8f0; }
+        .main-tabs .tab-link.active {
+            color: #1d4ed8; background-color: #ffffff; border: 1px solid #cbd5e1; border-bottom-color: #ffffff;
+        }
+
+        /* Tournaments 티어 필터 */
+        #tab-all, #tab-s, #tab-a { display: none !important; }
+        .filter-tabs { display: flex; gap: 10px; margin-top: 15px; margin-bottom: 25px; }
+        .filter-tabs label {
+            background-color: #ffffff; color: #334155; border: 1px solid #cbd5e1;
+            padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 14px;
+            transition: all 0.2s ease; box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .filter-tabs label:hover { border-color: #94a3b8; background-color: #f8fafc; }
+        #tab-all:checked ~ .filter-tabs label[for="tab-all"],
+        #tab-s:checked ~ .filter-tabs label[for="tab-s"],
+        #tab-a:checked ~ .filter-tabs label[for="tab-a"] { background-color: #1e293b; color: #ffffff; border-color: #1e293b; }
+
+        /* 테이블 공통 디자인 규격 */
+        .table-wrapper { width: 100%; overflow-x: auto; background: #ffffff; border-radius: 8px; border: 1px solid #cbd5e1; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        table { width: 100%; min-width: 1050px; border-collapse: collapse; }
+        th, td { padding: 15px; text-align: left; border-bottom: 1px solid #e2e8f0; vertical-align: middle; }
+        th { background: #f1f5f9; color: #475569; font-weight: bold; border-bottom: 2px solid #cbd5e1; }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background-color: #f8fafc; }
+
+        .tournament-link { font-weight: bold; color: #1d4ed8; text-decoration: underline; text-underline-offset: 4px; }
+        .tournament-link:hover { color: #2563eb; }
+        .prize-cell { white-space: nowrap; font-family: monospace; font-size: 13px; color: #334155; font-weight: 500; }
+
+        /* 테이블 내부 로고 및 텍스트 정밀 가독성 셋업 */
+        .table-team-cell { display: flex; align-items: center; gap: 8px; height: 24px; }
+        .table-logo { width: 22px; height: 22px; object-fit: contain; }
+        .table-team-cell span { font-weight: 600; color: #475569; }
+        .empty-cell { color: #94a3b8; font-weight: bold; padding-left: 5px; }
+
+        .badge { padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 12px; display: inline-block; text-align: center; }
+        .s-tier { background: rgba(234, 179, 8, 0.15); color: #b45309; border: 1px solid rgba(234, 179, 8, 0.3); }
+        .a-tier { background: rgba(59, 130, 246, 0.15); color: #1d4ed8; border: 1px solid rgba(59, 130, 246, 0.3); }
+
+        /* 티어별 필터링 기능 */
+        #tab-s:checked ~ .table-wrapper table tbody tr.row-a-tier { display: none; }
+        #tab-a:checked ~ .table-wrapper table tbody tr.row-s-tier { display: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏆 SN Esports Hub</h1>
+
+        <!-- 상단 내비게이션 바 -->
+        <div class="main-tabs">
+            <a href="index.html" class="tab-link active">📅 Tournaments</a>
+            <a href="ranking.html" class="tab-link">📊 RANKING</a>
+            <a href="rosters.html" class="tab-link">👥 Rosters</a>
+            <a href="teams.html" class="tab-link">🛡️ Teams</a>
+        </div>
+
+        <!-- Tournaments 테이블 구역 -->
+        <div id="section-tournaments">
+            <input type="radio" id="tab-all" name="tier-filter" checked>
+            <input type="radio" id="tab-s" name="tier-filter">
+            <input type="radio" id="tab-a" name="tier-filter">
+
+            <div class="filter-tabs">
+                <label for="tab-all">all</label>
+                <label for="tab-s">S-Tier</label>
+                <label for="tab-a">A-Tier</label>
+            </div>
+
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 8%;">티어</th>
+                            <th style="width: 27%;">대회명</th>
+                            <th style="width: 18%;">일정</th>
+                            <th style="width: 27%;">총상금</th>
+                            <th style="width: 10%;">우승</th>
+                            <th style="width: 10%;">준우승</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- 1. SN Asian championship (결과 있음) -->
+                        <tr class="row-a-tier">
+                            <td><span class="badge a-tier">A-Tier</span></td>
+                            <td><a href="asian.html" class="tournament-link">SN Asian championship</a></td>
+                            <td style="color: #475569;">2026-06-24 ~ 06-28</td>
+                            <td class="prize-cell">1st / $150,000 &nbsp;2nd / $70,000 &nbsp;3rd / $60,000</td>
+                            <td>
+                                <div class="table-team-cell">
+                                    <img src="32위 팀 로고/NAVI.png" alt="NAVI" class="table-logo">
+                                    <span>NAVI</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="table-team-cell">
+                                    <img src="32위 팀 로고/T1.png" alt="T1" class="table-logo">
+                                    <span>T1</span>
+                                </div>
+                            </td>
+                        </tr>
+                        <!-- 2. IES Cologne Major 2026 (결과 대기 - 구조 교정 완료) -->
+                        <tr class="row-s-tier">
+                            <td><span class="badge s-tier">S-Tier</span></td>
+                            <td><a href="cologne.html" class="tournament-link">IES Cologne Major 2026</a></td>
+                            <td style="color: #475569;">2026-06-29 ~ 07-12</td>
+                            <td class="prize-cell">1st / $500,000 &nbsp;2nd / $170,000 &nbsp;3rd / $100,000</td>
+                            <td><div class="empty-cell">-</div></td>
+                            <td><div class="empty-cell">-</div></td>
+                        </tr>
+                        <!-- 3. Esports World Cup SN 2026 (결과 대기 - 구조 교정 완료) -->
+                        <tr class="row-s-tier">
+                            <td><span class="badge s-tier">S-Tier</span></td>
+                            <td><a href="ewc.html" class="tournament-link">Esports World Cup SN 2026</a></td>
+                            <td style="color: #475569;">2026-07-15 ~ 07-26</td>
+                            <td class="prize-cell">1st / $600,000 &nbsp;2nd / $340,000 &nbsp;3rd / $190,000</td>
+                            <td><div class="empty-cell">-</div></td>
+                            <td><div class="empty-cell">-</div></td>
+                        </tr>
+                        <!-- 4. BLAST SN FALL 2026 (결과 대기 - 구조 교정 완료) -->
+                        <tr class="row-a-tier">
+                            <td><span class="badge a-tier">A-Tier</span></td>
+                            <td><a href="bsf26.html" class="tournament-link">BLAST SN FALL 2026</a></td>
+                            <td style="color: #475569;">2026-07-29 ~ 08-04</td>
+                            <td class="prize-cell">1st / $150,000 &nbsp;2nd / $60,000 &nbsp;3rd-4th / $40,000</td>
+                            <td><div class="empty-cell">-</div></td>
+                            <td><div class="empty-cell">-</div></td>
+                        </tr>
+<!-- index.html 내 <tbody> 테이블의 기존 코드 아래에 추가 -->
+
+<tr class="row-a-tier">
+    <td><span class="badge a-tier">A-Tier</span></td>
+    <td><a href="nations_cup.html" class="tournament-link">Esports Nations Cup 2026</a></td>
+    <td style="color: #475569;">2026-08-15 ~ 08-30</td>
+    <td class="prize-cell">1st / $300,000 &nbsp;2nd / $150,000 &nbsp;3rd / $80,000</td>
+    <td><div class="empty-cell">TBD</div></td>
+    <td><div class="empty-cell">TBD</div></td>
+</tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

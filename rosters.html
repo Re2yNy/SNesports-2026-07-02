@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta name="robots" content="noindex, nofollow">
+    <meta charset="UTF-8">
+    <title>Esports Tournament & Ranking</title>
+    <style>
+        body { background-color: #f4f6f9; color: #1e293b; font-family: sans-serif; padding: 40px 20px; margin: 0; }
+        .container { max-width: 1100px; margin: 0 auto; width: 100%; box-sizing: border-box; }
+        h1 { margin-bottom: 25px; color: #0f172a; display: flex; align-items: center; gap: 10px; }
+
+        /* 대메뉴 탭 스타일 */
+        .main-tabs { display: flex; gap: 5px; margin-bottom: 30px; border-bottom: 2px solid #cbd5e1; padding-bottom: 0; align-items: flex-end; }
+        .main-tabs .tab-link {
+            padding: 12px 24px; font-weight: bold; font-size: 16px; cursor: pointer;
+            color: #64748b; border-radius: 6px 6px 0 0; border: 1px solid transparent;
+            margin-bottom: -2px; transition: all 0.2s ease; text-decoration: none; display: inline-block;
+        }
+        .main-tabs .tab-link:hover { color: #1e293b; background-color: #e2e8f0; }
+        .main-tabs .tab-link.active {
+            color: #1d4ed8; background-color: #ffffff; border: 1px solid #cbd5e1; border-bottom-color: #ffffff;
+        }
+
+        /* 팀 선택 서브 탭 박스 영역 */
+        .sub-tab-wrapper {
+            background-color: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px;
+            padding: 15px 20px; display: flex; gap: 6px; margin-bottom: 25px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05); flex-wrap: wrap;
+        }
+        .team-btn {
+            padding: 6px 12px; font-weight: bold; font-size: 12px; border-radius: 4px;
+            cursor: pointer; border: 1px solid #cbd5e1; background-color: #ffffff; color: #475569;
+        }
+        .team-btn:hover { background-color: #f8fafc; border-color: #94a3b8; }
+        .team-btn.active { background-color: #1d4ed8; color: #ffffff; border-color: #1d4ed8; }
+
+        /* 메인 명단 카드 하우징 */
+        .roster-card {
+            background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px;
+            padding: 30px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); max-width: 550px;
+        }
+
+        .roster-section { display: none; }
+        .roster-section.active { display: block; }
+
+        h2 { font-size: 20px; font-weight: bold; color: #0f172a; margin-top: 0; margin-bottom: 20px; display: inline-block; border-bottom: 2px solid #1d4ed8; padding-bottom: 6px; }
+
+        /* 테이블 스타일 */
+        .roster-table { width: 100%; border-collapse: collapse; text-align: left; border: 1px solid #cbd5e1; }
+        .roster-table th, .roster-table td { padding: 12px 15px; border-bottom: 1px solid #cbd5e1; font-size: 14px; }
+        .roster-table th { background-color: #eaedf2; color: #475569; font-weight: bold; border-bottom: 2px solid #cbd5e1; }
+        
+        .id-cell { font-weight: bold; color: #1d4ed8; font-size: 14px; }
+        .contract-cell { color: #475569; font-family: monospace; font-size: 14px; }
+        .coach-header { background-color: #f1f5f9; color: #475569; font-weight: bold; font-size: 13px; }
+        .coach-cell { color: #1d4ed8; font-weight: bold; }
+        .coach-title { color: #64748b; font-size: 12px; font-weight: normal; margin-left: 4px; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>🏆 SN Esports Hub</h1>
+
+        <div class="main-tabs">
+            <a href="index.html" class="tab-link">📅 Tournaments</a>
+            <a href="ranking.html" class="tab-link">📊 RANKING</a>
+            <a href="rosters.html" class="tab-link active">👥 Rosters</a>
+            <a href="teams.html" class="tab-link">🛡️ Teams</a>
+        </div>
+
+        <div class="sub-tab-wrapper">
+            <button class="team-btn active" onclick="toggleTeam('GEN', this)">GEN</button>
+            <button class="team-btn" onclick="toggleTeam('FLC', this)">FLC</button>
+            <button class="team-btn" onclick="toggleTeam('SPR', this)">SPR</button>
+            <button class="team-btn" onclick="toggleTeam('DRX', this)">DRX</button>
+            <button class="team-btn" onclick="toggleTeam('VIT', this)">VIT</button>
+            <button class="team-btn" onclick="toggleTeam('NAVI', this)">NAVI</button>
+            <button class="team-btn" onclick="toggleTeam('G2', this)">G2</button>
+            <button class="team-btn" onclick="toggleTeam('FAZE', this)">FAZE</button>
+            <button class="team-btn" onclick="toggleTeam('MOUZ', this)">MOUZ</button>
+            <button class="team-btn" onclick="toggleTeam('PRX', this)">PRX</button>
+            <button class="team-btn" onclick="toggleTeam('FNC', this)">FNC</button>
+            <button class="team-btn" onclick="toggleTeam('SEN', this)">SEN</button>
+            <button class="team-btn" onclick="toggleTeam('T1', this)">T1</button>
+            <button class="team-btn" onclick="toggleTeam('MG', this)">MG</button>
+            <button class="team-btn" onclick="toggleTeam('NS', this)">NS</button>
+            <button class="team-btn" onclick="toggleTeam('PVIS', this)">PVIS</button>
+            <button class="team-btn" onclick="toggleTeam('LEGACY', this)">LEGACY</button>
+            <button class="team-btn" onclick="toggleTeam('NRG', this)">NRG</button>
+            <button class="team-btn" onclick="toggleTeam('MIBR', this)">MIBR</button>
+            <button class="team-btn" onclick="toggleTeam('TL', this)">TL</button>
+            <button class="team-btn" onclick="toggleTeam('RRQ', this)">RRQ</button>
+            <button class="team-btn" onclick="toggleTeam('EDG', this)">EDG</button>
+            <button class="team-btn" onclick="toggleTeam('LOUD', this)">LOUD</button>
+            <button class="team-btn" onclick="toggleTeam('LEV', this)">LEV</button>
+            <button class="team-btn" onclick="toggleTeam('BOOM', this)">BOOM</button>
+            <button class="team-btn" onclick="toggleTeam('AURORA', this)">AURORA</button>
+            <button class="team-btn" onclick="toggleTeam('AST', this)">AST</button>
+            <button class="team-btn" onclick="toggleTeam('FURIA', this)">FURIA</button>
+            <button class="team-btn" onclick="toggleTeam('BB', this)">BB</button>
+            <button class="team-btn" onclick="toggleTeam('FQ', this)">FQ</button>
+            <button class="team-btn" onclick="toggleTeam('PAIN', this)">PAIN</button>
+            <button class="team-btn" onclick="toggleTeam('GL', this)">GL</button>
+        </div>
+
+        <div class="roster-card">
+            
+            <div id="view-GEN" class="roster-section active">
+                <h2>GEN Active Roster</h2>
+                <table class="roster-table">
+                    <thead><tr><th>ID</th><th>Contract End</th></tr></thead>
+                    <tbody>
+                        <tr><td class="id-cell">T3XTURE</td><td class="contract-cell">2028-01-15</td></tr>
+                        <tr><td class="id-cell">Ash</td><td class="contract-cell">2029-01-15</td></tr>
+                        <tr><td class="id-cell">LAKIA</td><td class="contract-cell">2028-01-15</td></tr>
+                        <tr><td class="id-cell">METEOR</td><td class="contract-cell">2027-01-15</td></tr>
+                        <tr><td class="id-cell">ZynX</td><td class="contract-cell">2027-01-15</td></tr>
+                        <tr><td colspan="2" class="coach-header">Coaching Staff</td></tr>
+                        <tr><td class="coach-cell">solo <span class="coach-title">(Head Coach)</span></td><td class="contract-cell">2026-11-30</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div id="view-FLC" class="roster-section">
+                <h2>FLC Active Roster</h2>
+                <table class="roster-table">
+                    <thead><tr><th>ID</th><th>Contract End</th></tr></thead>
+                    <tbody>
+                        <tr><td class="id-cell">TESES</td><td class="contract-cell">2028-01-15</td></tr>
+                        <tr><td class="id-cell">KYOUSUKE</td><td class="contract-cell">2028-01-15</td></tr>
+                        <tr><td class="id-cell">Re2yNy</td><td class="contract-cell">2027-01-15</td></tr>
+                        <tr><td class="id-cell">Monesy</td><td class="contract-cell">2028-01-15</td></tr>
+                        <tr><td class="id-cell">Niko</td><td class="contract-cell">2028-01-15</td></tr>
+                        <tr><td colspan="2" class="coach-header">Coaching Staff</td></tr>
+                        <tr><td class="coach-cell">zonic <span class="coach-title">(Head Coach)</span></td><td class="contract-cell">2026-12-31</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div id="view-SPR" class="roster-section">
+                <h2>SPR Active Roster</h2>
+                <table class="roster-table">
+                    <thead><tr><th>ID</th><th>Contract End</th></tr></thead>
+                    <tbody>
+                        <tr><td class="id-cell">chopper</td><td class="contract-cell">2027-12-31</td></tr>
+                        <tr><td class="id-cell">magixx</td><td class="contract-cell">2027-12-31</td></tr>
+                        <tr><td class="id-cell">donk</td><td class="contract-cell">2028-12-31</td></tr>
+                        <tr><td class="id-cell">sh1ro</td><td class="contract-cell">2028-12-31</td></tr>
+                        <tr><td class="id-cell">zoner</td><td class="contract-cell">2027-12-31</td></tr>
+                        <tr><td colspan="2" class="coach-header">Coaching Staff</td></tr>
+                        <tr><td class="coach-cell">hally <span class="coach-title">(Head Coach)</span></td><td class="contract-cell">2027-12-31</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div id="view-DRX" class="roster-section">
+                <h2>DRX Active Roster</h2>
+                <table class="roster-table">
+                    <thead><tr><th>ID</th><th>Contract End</th></tr></thead>
+                    <tbody>
+                        <tr><td class="id-cell">stax</td><td class="contract-cell">2026-11-30</td></tr>
+                        <tr><td class="id-cell">Buzz</td><td class="contract-cell">2026-11-30</td></tr>
+                        <tr><td class="id-cell">MaKo</td><td class="contract-cell">2027-11-30</td></tr>
+                        <tr><td class="id-cell">Foxy9</td><td class="contract-cell">2026-11-30</td></tr>
+                        <tr><td class="id-cell">Flashback</td><td class="contract-cell">2027-11-30</td></tr>
+                        <tr><td class="id-cell">ATaKa</td><td class="contract-cell">2027-11-30</td></tr>
+                        <tr><td colspan="2" class="coach-header">Coaching Staff</td></tr>
+                        <tr><td class="coach-cell">termi <span class="coach-title">(Head Coach)</span></td><td class="contract-cell">2026-11-30</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div id="view-VIT" class="roster-section">
+                <h2>VIT Active Roster</h2>
+                <table class="roster-table">
+                    <thead><tr><th>ID</th><th>Contract End</th></tr></thead>
+                    <tbody>
+                        <tr><td class="id-cell">apEX</td><td class="contract-cell">2027-12-31</td></tr>
+                        <tr><td class="id-cell">ZywOo</td><td class="contract-cell">2028-12-31</td></tr>
+                        <tr><td class="id-cell">flameZ</td><td class="contract-cell">2027-12-31</td></tr>
+                        <tr><td class="id-cell">Spinx</td><td class="contract-cell">2027-12-31</td></tr>
+                        <tr><td class="id-cell">mezii</td><td class="contract-cell">2027-12-31</td></tr>
+                        <tr><td colspan="2" class="coach-header">Coaching Staff</td></tr>
+                        <tr><td class="coach-cell">XTQZZZ <span class="coach-title">(Head Coach)</span></td><td class="contract-cell">2027-12-31</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div id="view-NAVI" class="roster-section">
+                <h2>NAVI Active Roster</h2>
+                <table class="roster-table">
+                    <thead><tr><th>ID</th><th>Contract End</th></tr></thead>
+                    <tbody>
+                        <tr><td class="id-cell">bit</td><td class="contract-cell">2027-01-15</td></tr>
+                        <tr><td class="id-cell">Wonderful</td><td class="contract-cell">2027-01-15</td></tr>
+                        <tr><td class="id-cell">Aleksib</td><td class="contract-cell">2027-01-15</td></tr>
+                        <tr><td class="id-cell">zmjjHK</td><td class="contract-cell">2027-01-15</td></tr>
+                        <tr><td class="id-cell">IM</td><td class="contract-cell">2027-01-15</td></tr>
+                        <tr><td colspan="2" class="coach-header">Coaching Staff</td></tr>
+                        <tr><td class="coach-cell">B1ad3 <span class="coach-title">(Head Coach)</span></td><td class="contract-cell">2026-11-30</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div id="view-T1" class="roster-section">
+                <h2>T1 Active Roster</h2>
+                <table class="roster-table">
+                    <thead><tr><th>ID</th><th>Contract End</th></tr></thead>
+                    <tbody>
+                        <tr><td class="id-cell">Sayaplayer</td><td class="contract-cell">2027-10-31</td></tr>
+                        <tr><td class="id-cell">Carpe</td><td class="contract-cell">2027-10-31</td></tr>
+                        <tr><td class="id-cell">Rossy</td><td class="contract-cell">2027-10-31</td></tr>
+                        <tr><td class="id-cell">iZu</td><td class="contract-cell">2028-10-31</td></tr>
+                        <tr><td class="id-cell">xccurate</td><td class="contract-cell">2027-10-31</td></tr>
+                        <tr><td colspan="2" class="coach-header">Coaching Staff</td></tr>
+                        <tr><td class="coach-cell">Autumn <span class="coach-title">(Head Coach)</span></td><td class="contract-cell">2027-10-31</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            </div>
+    </div>
+
+    <script>
+        function toggleTeam(teamId, btnElement) {
+            const sections = document.querySelectorAll('.roster-section');
+            sections.forEach(sec => sec.classList.remove('active'));
+
+            const buttons = document.querySelectorAll('.team-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+
+            document.getElementById('view-' + teamId).classList.add('active');
+            btnElement.classList.add('active');
+        }
+    </script>
+</body>
+</html>

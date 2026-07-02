@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta name="robots" content="noindex, nofollow">
+    <meta charset="UTF-8">
+    <title>Esports Ranking Hub</title>
+    <style>
+        body { background-color: #f4f6f9; color: #1e293b; font-family: sans-serif; padding: 40px 20px; margin: 0; }
+        .container { max-width: 1100px; margin: 0 auto; width: 100%; box-sizing: border-box; }
+        h1 { margin-bottom: 25px; color: #0f172a; }
+
+        /* 대메뉴 탭 스타일 */
+        .main-tabs { display: flex; gap: 5px; margin-bottom: 30px; border-bottom: 2px solid #cbd5e1; padding-bottom: 0; align-items: flex-end; }
+        .main-tabs .tab-link {
+            padding: 12px 24px; font-weight: bold; font-size: 16px; cursor: pointer;
+            color: #64748b; border-radius: 6px 6px 0 0; border: 1px solid transparent;
+            margin-bottom: -2px; transition: all 0.2s ease; text-decoration: none; display: inline-block;
+        }
+        .main-tabs .tab-link:hover { color: #1e293b; background-color: #e2e8f0; }
+        .main-tabs .tab-link.active {
+            color: #1d4ed8; background-color: #ffffff; border: 1px solid #cbd5e1; border-bottom-color: #ffffff;
+        }
+
+        /* 팀 랭킹 / 개인 랭킹 서브 토글 바 */
+        .ranking-sub-tabs { display: flex; gap: 8px; margin-bottom: 20px; background-color: #ffffff; border: 1px solid #cbd5e1; padding: 12px 18px; border-radius: 8px; max-width: 550px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); box-sizing: border-box; }
+        .rank-btn { padding: 6px 14px; font-weight: bold; font-size: 13px; border-radius: 4px; cursor: pointer; border: 1px solid #cbd5e1; background-color: #ffffff; color: #475569; }
+        .rank-btn:hover { background-color: #f8fafc; border-color: #94a3b8; }
+        .rank-btn.active { background-color: #1d4ed8; color: #ffffff; border-color: #1d4ed8; }
+
+        .ranking-view { display: none; }
+        .ranking-view.active { display: block; }
+
+        /* 테이블 공통 디자인 규격 */
+        .table-wrapper { width: 100%; overflow-x: auto; background: #ffffff; border-radius: 8px; border: 1px solid #cbd5e1; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .liqui-table-wrapper { max-width: 720px; border-radius: 8px; overflow: hidden; }
+        .liqui-table { width: 100%; border-collapse: collapse; }
+        .liqui-table th, .liqui-table td { padding: 10px 12px; border: 1px solid #cbd5e1; font-size: 13px; vertical-align: middle; }
+        .liqui-table th { background: #eaedf2; color: #334155; font-weight: bold; text-align: center; border-top: none; }
+        .liqui-table th:first-child, .liqui-table td:first-child { border-left: none; }
+        .liqui-table th:last-child, .liqui-table td:last-child { border-right: none; }
+        
+        .l-rank { font-weight: bold; text-align: center; width: 40px; background: #f1f5f9; color: #0f172a; }
+        .l-logo-cell { width: 45px; text-align: center; background: #ffffff; padding: 4px !important; }
+        .l-logo-cell img { width: 26px; height: 26px; object-fit: contain; display: block; margin: 0 auto; }
+        .l-team { font-weight: bold; color: #0f172a; background: #ffffff; padding-left: 15px !important; }
+        .l-champs { text-align: center; width: 85px; background: #ffffff; font-weight: 500; color: #475569; }
+        .l-champs.has-win { color: #b45309; font-weight: bold; }
+        .l-points { text-align: center; width: 80px; background: #ffffff; font-family: monospace; font-weight: 500; color: #334155; }
+        .l-change { text-align: center; width: 70px; background: #ffffff; color: #64748b; font-weight: bold; }
+
+        /* 개인 랭킹 전용 스타일 */
+        .l-player { font-weight: bold; color: #1d4ed8; background: #ffffff; padding-left: 15px !important; }
+        .l-player-team { font-weight: 600; color: #475569; background: #ffffff; text-align: center; width: 80px; }
+        .l-tmvp { text-align: center; width: 70px; background: #ffffff; font-weight: bold; color: #ea580c; }
+        .l-fmvp { text-align: center; width: 70px; background: #ffffff; font-weight: bold; color: #0284c7; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏆 SN Esports Hub</h1>
+
+        <div class="main-tabs">
+            <a href="index.html" class="tab-link">📅 Tournaments</a>
+            <a href="ranking.html" class="tab-link active">📊 RANKING</a>
+            <a href="rosters.html" class="tab-link">👥 Rosters</a>
+            <a href="teams.html" class="tab-link">🛡️ Teams</a>
+        </div>
+
+        <div class="ranking-sub-tabs">
+            <button class="rank-btn active" onclick="toggleRankView('team', this)">Team Ranking</button>
+            <button class="rank-btn" onclick="toggleRankView('player', this)">Player Ranking</button>
+        </div>
+
+        <div id="rank-view-team" class="ranking-view active">
+            <div class="table-wrapper liqui-table-wrapper">
+                <table class="liqui-table">
+                    <thead>
+                        <tr>
+                            <th class="l-rank">#</th>
+                            <th colspan="2">Team</th>
+                            <th class="l-champs">S-Champs</th>
+                            <th class="l-champs">A-Champs</th>
+                            <th class="l-points">Points</th>
+                            <th class="l-change">Change</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td class="l-rank">1</td><td class="l-logo-cell"><img src="32위 팀 로고/GEN.png" alt="GEN"></td><td class="l-team">GEN</td><td class="l-champs">—</td><td class="l-champs has-win">🏆 1회</td><td class="l-points">550</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">2</td><td class="l-logo-cell"><img src="32위 팀 로고/SEN.png" alt="SEN"></td><td class="l-team">SEN</td><td class="l-champs has-win">🏆 1회</td><td class="l-champs has-win">🏆 1회</td><td class="l-points">500</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">3</td><td class="l-logo-cell"><img src="32위 팀 로고/FLC.png" alt="FLC"></td><td class="l-team">FLC</td><td class="l-champs has-win">🏆 1회</td><td class="l-champs has-win">🏆 1회</td><td class="l-points">450</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">4</td><td class="l-logo-cell"><img src="32위 팀 로고/NAVI.png" alt="NAVI"></td><td class="l-team">NAVI</td><td class="l-champs">—</td><td class="l-champs has-win">🏆 2회</td><td class="l-points">350</td><td class="l-change" style="color:#16a34a;">+3</td></tr>
+                        <tr><td class="l-rank">5</td><td class="l-logo-cell"><img src="32위 팀 로고/SPR.png" alt="SPR"></td><td class="l-team">SPR</td><td class="l-champs">—</td><td class="l-champs has-win">🏆 1회</td><td class="l-points">350</td><td class="l-change" style="color:#dc2626;">-1</td></tr>
+                        <tr><td class="l-rank">6</td><td class="l-logo-cell"><img src="32위 팀 로고/VIT.png" alt="VIT"></td><td class="l-team">VIT</td><td class="l-champs">—</td><td class="l-champs has-win">🏆 1회</td><td class="l-points">275</td><td class="l-change" style="color:#dc2626;">-1</td></tr>
+                        <tr><td class="l-rank">7</td><td class="l-logo-cell"><img src="32위 팀 로고/DRX.png" alt="DRX"></td><td class="l-team">DRX</td><td class="l-champs">—</td><td class="l-champs">—</td><td class="l-points">250</td><td class="l-change" style="color:#dc2626;">-1</td></tr>
+                        <tr><td class="l-rank">8</td><td class="l-logo-cell"><img src="32위 팀 로고/RRQ.png" alt="RRQ"></td><td class="l-team">RRQ</td><td class="l-champs">—</td><td class="l-champs has-win">🏆 1회</td><td class="l-points">200</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">9</td><td class="l-logo-cell"><img src="32위 팀 로고/PRX.png" alt="PRX"></td><td class="l-team">PRX</td><td class="l-champs">—</td><td class="l-champs">—</td><td class="l-points">150</td><td class="l-change" style="color:#16a34a;">+1</td></tr>
+                        <tr><td class="l-rank">10</td><td class="l-logo-cell"><img src="32위 팀 로고/EDG.png" alt="EDG"></td><td class="l-team">EDG</td><td class="l-champs">—</td><td class="l-champs has-win">🏆 1회</td><td class="l-points">150</td><td class="l-change" style="color:#dc2626;">-1</td></tr>
+                        <tr><td class="l-rank">11</td><td class="l-logo-cell"><img src="32위 팀 로고/G2.png" alt="G2"></td><td class="l-team">G2</td><td class="l-champs">—</td><td class="l-champs">—</td><td class="l-points">150</td><td class="l-change" style="color:#dc2626;">-1</td></tr>
+                        <tr><td class="l-rank">12</td><td class="l-logo-cell"><img src="32위 팀 로고/FNC.png" alt="FNC"></td><td class="l-team">FNC</td><td class="l-champs">—</td><td class="l-champs">—</td><td class="l-points">75</td><td class="l-change" style="color:#16a34a;">+2</td></tr>
+                        <tr><td class="l-rank">13</td><td class="l-logo-cell"><img src="32위 팀 로고/T1.png" alt="T1"></td><td class="l-team">T1</td><td class="l-champs">—</td><td class="l-champs">—</td><td class="l-points">75</td><td class="l-change" style="color:#16a34a;">+16</td></tr>
+                        <tr><td class="l-rank">14</td><td class="l-logo-cell"><img src="32위 팀 로고/BOOM.png" alt="BOOM"></td><td class="l-team">BOOM</td><td class="l-champs">—</td><td class="l-champs">—</td><td class="l-points">50</td><td class="l-change" style="color:#dc2626;">-2</td></tr>
+                        <tr><td class="l-rank">15</td><td class="l-logo-cell"><img src="32위 팀 로고/LOUD.png" alt="LOUD"></td><td class="l-team">LOUD</td><td class="l-champs">—</td><td class="l-champs">—</td><td class="l-points">50</td><td class="l-change" style="color:#dc2626;">-2</td></tr>
+                        <tr><td class="l-rank">16</td><td class="l-logo-cell"><img src="32위 팀 로고/FAZE.png" alt="FAZE"></td><td class="l-team">FAZE</td><td class="l-champs">—</td><td class="l-champs">—</td><td class="l-points">45</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">17</td><td class="l-logo-cell"><img src="32위 팀 로고/MOUZ.png" alt="MOUZ"></td><td class="l-team">MOUZ</td><td class="l-champs">—</td><td class="l-champs">—</td><td class="l-points">45</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">18</td><td class="l-logo-cell"><img src="32위 팀 로고/MG.png" alt="MG"></td><td class="l-team">MG</td><td class="l-champs">—</td><td class="l-champs">—</td><td class="l-points">40</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">19</td><td class="l-logo-cell"><img src="32위 팀 로고/NS.png" alt="NS"></td><td class="l-team">NS</td><td class="l-champs">—</td><td class="l-champs">—</td><td class="l-points">40</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">20</td><td class="l-logo-cell"><img src="32위 팀 로고/PVIS.png" alt="PVIS"></td><td class="l-team">PVIS</td><td class="l-champs">—</td><td class="l-champs">—</td><td class="l-points">35</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">21</td><td class="l-logo-cell"><img src="32위 팀 로고/LEGACY.png" alt="LEGACY"></td><td class="l-team">LEGACY</td><td class="l-champs">—</td><td class="l-champs">—</td><td class="l-points">35</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">22</td><td class="l-logo-cell"><img src="32위 팀 로고/NRG.png" alt="NRG"></td><td class="l-team">NRG</td><td class="l-champs">—</td><td class="l-champs">—</td><td class="l-points">30</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">23</td><td class="l-logo-cell"><img src="32위 팀 로고/MIBR.png" alt="MIBR"></td><td class="l-team">MIBR</td><td class="l-champs">—</td><td class="l-champs">—</td><td class="l-points">30</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">24</td><td class="l-logo-cell"><img src="32위 팀 로고/TL.png" alt="TL"></td><td class="l-team">TL</td><td class="l-champs">—</td><td class="l-champs">—</td><td class="l-points">25</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">25</td><td class="l-logo-cell"><img src="32위 팀 로고/LEV.png" alt="LEV"></td><td class="l-team">LEV</td><td class="l-champs">—</td><td class="l-champs">—</td><td class="l-points">25</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">26</td><td class="l-logo-cell"><img src="32위 팀 로고/AURORA.png" alt="AURORA"></td><td class="l-team">AURORA</td><td class="l-champs">—</td><td class="l-champs">—</td><td class="l-points">20</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">27</td><td class="l-logo-cell"><img src="32위 팀 로고/AST.png" alt="AST"></td><td class="l-team">AST</td><td class="l-champs">—</td><td class="l-champs">—</td><td class="l-points">20</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">28</td><td class="l-logo-cell"><img src="32위 팀 로고/FURIA.png" alt="FURIA"></td><td class="l-team">FURIA</td><td class="l-champs">—</td><td class="l-champs">—</td><td class="l-points">15</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">29</td><td class="l-logo-cell"><img src="32위 팀 로고/BB.png" alt="BB"></td><td class="l-team">BB</td><td class="l-champs">—</td><td class="l-champs">—</td><td class="l-points">15</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">30</td><td class="l-logo-cell"><img src="32위 팀 로고/FQ.png" alt="FQ"></td><td class="l-team">FQ</td><td class="l-champs">—</td><td class="l-champs">—</td><td class="l-points">10</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">31</td><td class="l-logo-cell"><img src="32위 팀 로고/PAIN.png" alt="PAIN"></td><td class="l-team">PAIN</td><td class="l-champs">—</td><td class="l-champs">—</td><td class="l-points">10</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">32</td><td class="l-logo-cell"><img src="32위 팀 로고/GL.png" alt="GL"></td><td class="l-team">GL</td><td class="l-champs">—</td><td class="l-champs">—</td><td class="l-points">5</td><td class="l-change">—</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="rank-view-player" class="ranking-view">
+            <div class="table-wrapper liqui-table-wrapper" style="max-width: 700px;">
+                <table class="liqui-table">
+                    <thead>
+                        <tr>
+                            <th class="l-rank">#</th>
+                            <th style="text-align: left; padding-left:15px;">Player ID</th>
+                            <th class="l-player-team">Team</th>
+                            <th class="l-tmvp">T-MVP</th>
+                            <th class="l-fmvp">F-MVP</th>
+                            <th class="l-points">Points</th>
+                            <th class="l-change">Change</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td class="l-rank">1</td><td class="l-player">Re2yNy</td><td class="l-player-team">FLC</td><td class="l-tmvp">2회</td><td class="l-fmvp">0회</td><td class="l-points">75</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">2</td><td class="l-player">TenZ</td><td class="l-player-team">SEN</td><td class="l-tmvp">1회</td><td class="l-fmvp">0회</td><td class="l-points">70</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">3</td><td class="l-player">m0NESY</td><td class="l-player-team">FLC</td><td class="l-tmvp">1회</td><td class="l-fmvp">1회</td><td class="l-points">67.5</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">4</td><td class="l-player">t3xture</td><td class="l-player-team">GEN</td><td class="l-tmvp">0회</td><td class="l-fmvp">1회</td><td class="l-points">65</td><td class="l-change" style="color:#16a34a;">+1</td></tr>
+                        <tr><td class="l-rank">5</td><td class="l-player">LAKIA</td><td class="l-player-team">GEN</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">65</td><td class="l-change" style="color:#16a34a;">+1</td></tr>
+                        <tr><td class="l-rank">6</td><td class="l-player">METEOR</td><td class="l-player-team">GEN</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">65</td><td class="l-change" style="color:#16a34a;">+1</td></tr>
+                        <tr><td class="l-rank">7</td><td class="l-player">ZynX</td><td class="l-player-team">GEN</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">65</td><td class="l-change" style="color:#16a34a;">+1</td></tr>
+                        <tr><td class="l-rank">8</td><td class="l-player">donk</td><td class="l-player-team">SPR</td><td class="l-tmvp">1회</td><td class="l-fmvp">2회</td><td class="l-points">62.5</td><td class="l-change" style="color:#dc2626;">-4</td></tr>
+                        <tr><td class="l-rank">9</td><td class="l-player">Zekken</td><td class="l-player-team">SEN</td><td class="l-tmvp">0회</td><td class="l-fmvp">1회</td><td class="l-points">55</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">10</td><td class="l-player">Johnqt</td><td class="l-player-team">SEN</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">50</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">11</td><td class="l-player">Zellsis</td><td class="l-player-team">SEN</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">50</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">12</td><td class="l-player">Sacy</td><td class="l-player-team">SEN</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">50</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">13</td><td class="l-player">KYOUSUKE</td><td class="l-player-team">FLC</td><td class="l-tmvp">0회</td><td class="l-fmvp">1회</td><td class="l-points">50</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">14</td><td class="l-player">zmjjHK</td><td class="l-player-team">NAVI</td><td class="l-tmvp">1회</td><td class="l-fmvp">0회</td><td class="l-points">47.5</td><td class="l-change" style="color:#16a34a;">+18</td></tr>
+                        <tr><td class="l-rank">15</td><td class="l-player">TESES</td><td class="l-player-team">FLC</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">45</td><td class="l-change" style="color:#dc2626;">-1</td></tr>
+                        <tr><td class="l-rank">16</td><td class="l-player">NIKO</td><td class="l-player-team">FLC</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">45</td><td class="l-change" style="color:#dc2626;">-1</td></tr>
+                        <tr><td class="l-rank">17</td><td class="l-player">ZywOo</td><td class="l-player-team">VIT</td><td class="l-tmvp">1회</td><td class="l-fmvp">0회</td><td class="l-points">42.5</td><td class="l-change" style="color:#dc2626;">-3</td></tr>
+                        <tr><td class="l-rank">18</td><td class="l-player">Aleksib</td><td class="l-player-team">NAVI</td><td class="l-tmvp">0회</td><td class="l-fmvp">1회</td><td class="l-points">40</td><td class="l-change" style="color:#16a34a;">+28</td></tr>
+                        <tr><td class="l-rank">19</td><td class="l-player">sh1ro</td><td class="l-player-team">SPR</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">40</td><td class="l-change" style="color:#dc2626;">-2</td></tr>
+                        <tr><td class="l-rank">20</td><td class="l-player">chopper</td><td class="l-player-team">SPR</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">40</td><td class="l-change" style="color:#dc2626;">-2</td></tr>
+                        <tr><td class="l-rank">21</td><td class="l-player">magixx</td><td class="l-player-team">SPR</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">40</td><td class="l-change" style="color:#dc2626;">-2</td></tr>
+                        <tr><td class="l-rank">22</td><td class="l-player">zoner</td><td class="l-player-team">SPR</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">40</td><td class="l-change" style="color:#dc2626;">-2</td></tr>
+                        <tr><td class="l-rank">23</td><td class="l-player">ZmjjKK</td><td class="l-player-team">EDG</td><td class="l-tmvp">1회</td><td class="l-fmvp">1회</td><td class="l-points">35</td><td class="l-change" style="color:#dc2626;">-1</td></tr>
+                        <tr><td class="l-rank">24</td><td class="l-player">Bit</td><td class="l-player-team">NAVI</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">35</td><td class="l-change" style="color:#16a34a;">+22</td></tr>
+                        <tr><td class="l-rank">25</td><td class="l-player">Wonderful</td><td class="l-player-team">NAVI</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">35</td><td class="l-change" style="color:#16a34a;">+22</td></tr>
+                        <tr><td class="l-rank">26</td><td class="l-player">IM</td><td class="l-player-team">NAVI</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">35</td><td class="l-change" style="color:#16a34a;">+22</td></tr>
+                        <tr><td class="l-rank">27</td><td class="l-player">apEX</td><td class="l-player-team">VIT</td><td class="l-tmvp">0회</td><td class="l-fmvp">1회</td><td class="l-points">35</td><td class="l-change" style="color:#dc2626;">-6</td></tr>
+                        <tr><td class="l-rank">28</td><td class="l-player">ZEMKIN</td><td class="l-player-team">RRQ</td><td class="l-tmvp">0회</td><td class="l-fmvp">1회</td><td class="l-points">25</td><td class="l-change" style="color:#dc2626;">-5</td></tr>
+                        <tr><td class="l-rank">29</td><td class="l-player">huNter-</td><td class="l-player-team">G2</td><td class="l-tmvp">1회</td><td class="l-fmvp">0회</td><td class="l-points">22.5</td><td class="l-change" style="color:#dc2626;">-4</td></tr>
+                        <tr><td class="l-rank">30</td><td class="l-player">nobody</td><td class="l-player-team">EDG</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">17.5</td><td class="l-change" style="color:#16a34a;">+21</td></tr>
+                        <tr><td class="l-rank">31</td><td class="l-player">CHICHOO</td><td class="l-player-team">EDG</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">17.5</td><td class="l-change" style="color:#16a34a;">+21</td></tr>
+                        <tr><td class="l-rank">32</td><td class="l-player">Smoggy</td><td class="l-player-team">EDG</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">17.5</td><td class="l-change" style="color:#16a34a;">+21</td></tr>
+                        <tr><td class="l-rank">33</td><td class="l-player">S1Mon</td><td class="l-player-team">EDG</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">17.5</td><td class="l-change" style="color:#16a34a;">+21</td></tr>
+                        <tr><td class="l-rank">34</td><td class="l-player">dos9</td><td class="l-player-team">BOOM</td><td class="l-tmvp">1회</td><td class="l-fmvp">0회</td><td class="l-points">17.5</td><td class="l-change" style="color:#dc2626;">-10</td></tr>
+                        <tr><td class="l-rank">35</td><td class="l-player">Sayaplayer</td><td class="l-player-team">T1</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">10</td><td class="l-change" style="color:#16a34a;">+96</td></tr>
+                        <tr><td class="l-rank">36</td><td class="l-player">Carpe</td><td class="l-player-team">T1</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">10</td><td class="l-change" style="color:#16a34a;">+96</td></tr>
+                        <tr><td class="l-rank">37</td><td class="l-player">Rossy</td><td class="l-player-team">T1</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">10</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">38</td><td class="l-player">iZu</td><td class="l-player-team">T1</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">10</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">39</td><td class="l-player">xccurate</td><td class="l-player-team">T1</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">10</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">40</td><td class="l-player">Ash</td><td class="l-player-team">GEN</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">10</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">41</td><td class="l-player">ATaKa</td><td class="l-player-team">DRX</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">10</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">42</td><td class="l-player">flameZ</td><td class="l-player-team">VIT</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">10</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">43</td><td class="l-player">Spinx</td><td class="l-player-team">VIT</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">10</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">44</td><td class="l-player">mezii</td><td class="l-player-team">VIT</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">10</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">45</td><td class="l-player">Buzz</td><td class="l-player-team">DRX</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">5</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">46</td><td class="l-player">MaKo</td><td class="l-player-team">DRX</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">5</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">47</td><td class="l-player">Foxy9</td><td class="l-player-team">DRX</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">5</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">48</td><td class="l-player">Flashback</td><td class="l-player-team">DRX</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">5</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">49</td><td class="l-player">stax</td><td class="l-player-team">DRX</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">5</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">50</td><td class="l-player">player_50</td><td class="l-player-team">FAZE</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">5</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">51</td><td class="l-player">player_51</td><td class="l-player-team">FAZE</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">5</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">52</td><td class="l-player">player_52</td><td class="l-player-team">FAZE</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">5</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">53</td><td class="l-player">player_53</td><td class="l-player-team">FAZE</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">5</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">54</td><td class="l-player">player_54</td><td class="l-player-team">FAZE</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">5</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">55</td><td class="l-player">player_55</td><td class="l-player-team">MOUZ</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">5</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">56</td><td class="l-player">player_56</td><td class="l-player-team">MOUZ</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">5</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">57</td><td class="l-player">player_57</td><td class="l-player-team">MOUZ</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">5</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">58</td><td class="l-player">player_58</td><td class="l-player-team">MOUZ</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">5</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">59</td><td class="l-player">player_59</td><td class="l-player-team">MOUZ</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">5</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">60</td><td class="l-player">player_60</td><td class="l-player-team">MG</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">5</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">61</td><td class="l-player">player_61</td><td class="l-player-team">MG</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">5</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">62</td><td class="l-player">player_62</td><td class="l-player-team">MG</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">5</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">63</td><td class="l-player">player_63</td><td class="l-player-team">MG</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">5</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">64</td><td class="l-player">player_64</td><td class="l-player-team">MG</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">5</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">65</td><td class="l-player">player_65</td><td class="l-player-team">NS</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">4</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">66</td><td class="l-player">player_66</td><td class="l-player-team">NS</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">4</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">67</td><td class="l-player">player_67</td><td class="l-player-team">NS</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">4</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">68</td><td class="l-player">player_68</td><td class="l-player-team">NS</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">4</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">69</td><td class="l-player">player_69</td><td class="l-player-team">NS</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">4</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">70</td><td class="l-player">player_70</td><td class="l-player-team">PVIS</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">4</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">71</td><td class="l-player">player_71</td><td class="l-player-team">PVIS</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">4</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">72</td><td class="l-player">player_72</td><td class="l-player-team">PVIS</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">4</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">73</td><td class="l-player">player_73</td><td class="l-player-team">PVIS</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">4</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">74</td><td class="l-player">player_74</td><td class="l-player-team">PVIS</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">4</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">75</td><td class="l-player">player_75</td><td class="l-player-team">LEGACY</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">3</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">76</td><td class="l-player">player_76</td><td class="l-player-team">LEGACY</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">3</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">77</td><td class="l-player">player_77</td><td class="l-player-team">LEGACY</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">3</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">78</td><td class="l-player">player_78</td><td class="l-player-team">LEGACY</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">3</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">79</td><td class="l-player">player_79</td><td class="l-player-team">LEGACY</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">3</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">80</td><td class="l-player">player_80</td><td class="l-player-team">NRG</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">3</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">81</td><td class="l-player">player_81</td><td class="l-player-team">NRG</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">3</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">82</td><td class="l-player">player_82</td><td class="l-player-team">NRG</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">3</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">83</td><td class="l-player">player_83</td><td class="l-player-team">NRG</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">3</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">84</td><td class="l-player">player_84</td><td class="l-player-team">NRG</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">3</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">85</td><td class="l-player">player_85</td><td class="l-player-team">MIBR</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">2</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">86</td><td class="l-player">player_86</td><td class="l-player-team">MIBR</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">2</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">87</td><td class="l-player">player_87</td><td class="l-player-team">MIBR</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">2</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">88</td><td class="l-player">player_88</td><td class="l-player-team">MIBR</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">2</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">89</td><td class="l-player">player_89</td><td class="l-player-team">MIBR</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">2</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">90</td><td class="l-player">player_90</td><td class="l-player-team">TL</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">2</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">91</td><td class="l-player">player_91</td><td class="l-player-team">TL</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">2</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">92</td><td class="l-player">player_92</td><td class="l-player-team">TL</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">2</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">93</td><td class="l-player">player_93</td><td class="l-player-team">TL</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">2</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">94</td><td class="l-player">player_94</td><td class="l-player-team">TL</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">2</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">95</td><td class="l-player">player_95</td><td class="l-player-team">LEV</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">1</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">96</td><td class="l-player">player_96</td><td class="l-player-team">LEV</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">1</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">97</td><td class="l-player">player_97</td><td class="l-player-team">LEV</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">1</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">98</td><td class="l-player">player_98</td><td class="l-player-team">LEV</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">1</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">99</td><td class="l-player">player_99</td><td class="l-player-team">LEV</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">1</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">100</td><td class="l-player">player_100</td><td class="l-player-team">AURORA</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">1</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">101</td><td class="l-player">player_101</td><td class="l-player-team">AURORA</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">1</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">102</td><td class="l-player">player_102</td><td class="l-player-team">AURORA</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">1</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">103</td><td class="l-player">player_103</td><td class="l-player-team">AURORA</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">1</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">104</td><td class="l-player">player_104</td><td class="l-player-team">AURORA</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">1</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">105</td><td class="l-player">player_105</td><td class="l-player-team">AST</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">1</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">106</td><td class="l-player">player_106</td><td class="l-player-team">AST</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">1</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">107</td><td class="l-player">player_107</td><td class="l-player-team">AST</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">1</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">108</td><td class="l-player">player_108</td><td class="l-player-team">AST</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">1</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">109</td><td class="l-player">player_109</td><td class="l-player-team">AST</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">1</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">110</td><td class="l-player">player_110</td><td class="l-player-team">FURIA</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">0</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">111</td><td class="l-player">player_111</td><td class="l-player-team">FURIA</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">0</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">112</td><td class="l-player">player_112</td><td class="l-player-team">FURIA</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">0</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">113</td><td class="l-player">player_113</td><td class="l-player-team">FURIA</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">0</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">114</td><td class="l-player">player_114</td><td class="l-player-team">FURIA</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">0</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">115</td><td class="l-player">player_115</td><td class="l-player-team">BB</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">0</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">116</td><td class="l-player">player_116</td><td class="l-player-team">BB</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">0</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">117</td><td class="l-player">player_117</td><td class="l-player-team">BB</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">0</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">118</td><td class="l-player">player_118</td><td class="l-player-team">BB</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">0</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">119</td><td class="l-player">player_119</td><td class="l-player-team">BB</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">0</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">120</td><td class="l-player">player_120</td><td class="l-player-team">FQ</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">0</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">121</td><td class="l-player">player_121</td><td class="l-player-team">FQ</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">0</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">122</td><td class="l-player">player_122</td><td class="l-player-team">FQ</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">0</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">123</td><td class="l-player">player_123</td><td class="l-player-team">FQ</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">0</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">124</td><td class="l-player">player_124</td><td class="l-player-team">FQ</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">0</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">125</td><td class="l-player">player_125</td><td class="l-player-team">PAIN</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">0</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">126</td><td class="l-player">player_126</td><td class="l-player-team">PAIN</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">0</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">127</td><td class="l-player">player_127</td><td class="l-player-team">PAIN</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">0</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">128</td><td class="l-player">player_128</td><td class="l-player-team">PAIN</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">0</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">129</td><td class="l-player">player_129</td><td class="l-player-team">PAIN</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">0</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">130</td><td class="l-player">player_130</td><td class="l-player-team">GL</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">0</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">131</td><td class="l-player">player_131</td><td class="l-player-team">GL</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">0</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">132</td><td class="l-player">player_132</td><td class="l-player-team">GL</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">0</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">133</td><td class="l-player">player_133</td><td class="l-player-team">GL</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">0</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">134</td><td class="l-player">player_134</td><td class="l-player-team">GL</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">0</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">135</td><td class="l-player">player_135</td><td class="l-player-team">PRX</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">0</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">136</td><td class="l-player">player_136</td><td class="l-player-team">PRX</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">0</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">137</td><td class="l-player">player_137</td><td class="l-player-team">PRX</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">0</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">138</td><td class="l-player">player_138</td><td class="l-player-team">PRX</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">0</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">139</td><td class="l-player">player_139</td><td class="l-player-team">PRX</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">0</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">140</td><td class="l-player">player_140</td><td class="l-player-team">FNC</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">0</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">141</td><td class="l-player">player_141</td><td class="l-player-team">FNC</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">0</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">142</td><td class="l-player">player_142</td><td class="l-player-team">FNC</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">0</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">143</td><td class="l-player">player_143</td><td class="l-player-team">FNC</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">0</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">144</td><td class="l-player">player_144</td><td class="l-player-team">FNC</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">0</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">145</td><td class="l-player">player_145</td><td class="l-player-team">BOOM</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">0</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">146</td><td class="l-player">player_146</td><td class="l-player-team">BOOM</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">0</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">147</td><td class="l-player">player_147</td><td class="l-player-team">BOOM</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">0</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">148</td><td class="l-player">player_148</td><td class="l-player-team">BOOM</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">0</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">149</td><td class="l-player">player_149</td><td class="l-player-team">LOUD</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">0</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">150</td><td class="l-player">player_150</td><td class="l-player-team">LOUD</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">0</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">151</td><td class="l-player">player_151</td><td class="l-player-team">LOUD</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">0</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">152</td><td class="l-player">player_152</td><td class="l-player-team">LOUD</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">0</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">153</td><td class="l-player">player_153</td><td class="l-player-team">LEGACY</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">0</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">154</td><td class="l-player">player_154</td><td class="l-player-team">LEGACY</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">0</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">155</td><td class="l-player">player_155</td><td class="l-player-team">LEGACY</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">0</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">156</td><td class="l-player">player_156</td><td class="l-player-team">LEGACY</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">0</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">157</td><td class="l-player">player_157</td><td class="l-player-team">AURORA</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">0</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">158</td><td class="l-player">player_158</td><td class="l-player-team">AURORA</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">0</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">159</td><td class="l-player">player_159</td><td class="l-player-team">AURORA</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">0</td><td class="l-change">—</td></tr>
+                        <tr><td class="l-rank">160</td><td class="l-player">player_160</td><td class="l-player-team">GL</td><td class="l-tmvp">0회</td><td class="l-fmvp">0회</td><td class="l-points">0</td><td class="l-change">—</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleRankView(type, btnElement) {
+            const views = document.querySelectorAll('.ranking-view');
+            views.forEach(v => v.classList.remove('active'));
+
+            const buttons = document.querySelectorAll('.rank-btn');
+            buttons.forEach(b => b.classList.remove('active'));
+
+            document.getElementById('rank-view-' + type).classList.add('active');
+            btnElement.classList.add('active');
+        }
+    </script>
+</body>
+</html>

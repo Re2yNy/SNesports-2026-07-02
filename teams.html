@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta name="robots" content="noindex, nofollow">
+    <meta charset="UTF-8">
+    <title>Team Profiles & History</title>
+    <style>
+        body { background-color: #f4f6f9; color: #1e293b; font-family: sans-serif; padding: 40px 20px; margin: 0; }
+        .container { max-width: 1100px; margin: 0 auto; width: 100%; box-sizing: border-box; }
+        h1 { margin-bottom: 25px; color: #0f172a; }
+
+        /* 메인 탭바 스타일 */
+        .main-tabs { display: flex; gap: 5px; margin-bottom: 30px; border-bottom: 2px solid #cbd5e1; padding-bottom: 0; align-items: flex-end; }
+        .main-tabs .tab-link {
+            padding: 12px 24px; font-weight: bold; font-size: 16px; cursor: pointer;
+            color: #64748b; border-radius: 6px 6px 0 0; border: 1px solid transparent;
+            margin-bottom: -2px; transition: all 0.2s ease; text-decoration: none; display: inline-block;
+        }
+        .main-tabs .tab-link:hover { color: #1e293b; background-color: #e2e8f0; }
+        .main-tabs .tab-link.active {
+            color: #1d4ed8; background-color: #ffffff; border: 1px solid #cbd5e1; border-bottom-color: #ffffff;
+        }
+
+        /* 팀 허브 분할 레이아웃 */
+        .hub-wrapper { display: flex; gap: 30px; min-height: 650px; }
+        
+        /* 왼쪽 팀 리스트 사이드바 */
+        .team-sidebar { width: 280px; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); height: 650px; overflow-y: auto; }
+        .sidebar-title { font-size: 14px; font-weight: bold; color: #64748b; margin-bottom: 12px; padding-left: 5px; text-transform: uppercase; position: sticky; top: 0; background: #ffffff; padding-top: 5px; padding-bottom: 5px; z-index: 10; }
+        .team-list-btn { display: flex; align-items: center; gap: 12px; width: 100%; padding: 10px 12px; border: 1px solid transparent; background: none; border-radius: 6px; text-align: left; font-weight: bold; color: #334155; cursor: pointer; margin-bottom: 4px; transition: all 0.15s ease; }
+        .team-list-btn:hover { background-color: #f1f5f9; }
+        .team-list-btn.active { background-color: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+        .sidebar-logo { width: 24px; height: 24px; object-fit: contain; }
+
+        /* 오른쪽 팀 상세 프로필 보드 */
+        .profile-main { flex-grow: 1; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 35px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); height: fit-content; }
+        
+        .profile-header { display: flex; align-items: center; gap: 20px; border-bottom: 2px solid #e2e8f0; padding-bottom: 20px; margin-bottom: 25px; }
+        .profile-logo { width: 60px; height: 40px; object-fit: contain; }
+        .profile-title-box h2 { font-size: 26px; margin: 0; color: #0f172a; }
+        .region-badge { display: inline-block; background: #f1f5f9; color: #475569; font-size: 11px; font-weight: bold; padding: 2px 6px; border-radius: 4px; margin-top: 4px; border: 1px solid #cbd5e1; }
+
+        /* 섹션 그리드 블록 */
+        .info-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 25px; margin-bottom: 25px; }
+        .info-block { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; padding: 20px; }
+        .block-title { font-size: 15px; font-weight: bold; color: #475569; margin-top: 0; margin-bottom: 12px; border-bottom: 1px solid #cbd5e1; padding-bottom: 6px; }
+
+        /* 최근 성적 시각화 마크 */
+        .form-wrapper { display: flex; gap: 6px; }
+        .form-badge { width: 24px; height: 24px; border-radius: 4px; text-align: center; line-height: 24px; font-size: 12px; font-weight: bold; color: #ffffff; }
+        .form-w { background-color: #16a34a; }
+        .form-l { background-color: #dc2626; }
+        .form-tbd { background-color: #94a3b8; }
+
+        /* 명단 및 텍스트 레이아웃 */
+        .roster-list { margin: 0; padding-left: 20px; color: #334155; font-weight: 500; font-size: 14px; }
+        .roster-list li { margin-bottom: 6px; }
+        .history-text { font-size: 14px; line-height: 1.6; color: #334155; margin: 0; }
+
+        /* 연도 선택 버튼 컨테이너 */
+        .years-container { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 5px; }
+        .year-tab-btn { font-weight: bold; color: #1d4ed8; background: #eff6ff; border: 1px solid #bfdbfe; padding: 6px 14px; border-radius: 6px; font-family: monospace; cursor: pointer; transition: all 0.15s ease; font-size: 14px; }
+        .year-tab-btn:hover { background-color: #dbeafe; }
+        .year-tab-btn.active { background-color: #1d4ed8; color: #ffffff; border-color: #1d4ed8; }
+        
+        /* 세부 우승 대회 정보 아카이브 카드 스타일 */
+        .detail-award-box { margin-top: 25px; padding: 20px; background: #fffdf5; border: 1px solid #fef08a; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.02); display: none; }
+        .detail-award-title { font-size: 15px; font-weight: bold; color: #ca8a04; margin-top: 0; margin-bottom: 12px; border-bottom: 1px solid #fef08a; padding-bottom: 6px; }
+        .multiple-champs-divider { margin-top: 15px; padding-top: 15px; border-top: 2px dashed #fef08a; }
+        
+        .detail-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 5px; }
+        .detail-table td { padding: 6px 8px; border-bottom: 1px dashed #fef08a; color: #475569; }
+        .detail-table tr:last-child td { border-bottom: none; }
+        .detail-table td.label-td { font-weight: bold; color: #713f12; width: 100px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏆 SN Esports Hub</h1>
+
+        <div class="main-tabs">
+            <a href="index.html" class="tab-link">📅 Tournaments</a>
+            <a href="ranking.html" class="tab-link">📊 RANKING</a>
+            <a href="rosters.html" class="tab-link">👥 Rosters</a>
+            <a href="teams.html" class="tab-link active">🛡️ Teams</a>
+        </div>
+
+        <div class="hub-wrapper">
+            <!-- 왼쪽 사이드바 -->
+            <div class="team-sidebar">
+                <div class="sidebar-title">32 Teams Hub</div>
+                <button class="team-list-btn active" onclick="loadTeamProfile('GEN', this)"><img src="32위 팀 로고/GEN.png" class="sidebar-logo"> GEN</button>
+                <button class="team-list-btn" onclick="loadTeamProfile('SEN', this)"><img src="32위 팀 로고/SEN.png" class="sidebar-logo"> SEN</button>
+                <button class="team-list-btn" onclick="loadTeamProfile('FLC', this)"><img src="32위 팀 로고/FLC.png" class="sidebar-logo"> FLC</button>
+                <button class="team-list-btn" onclick="loadTeamProfile('NAVI', this)"><img src="32위 팀 로고/NAVI.png" class="sidebar-logo"> NAVI</button>
+                <button class="team-list-btn" onclick="loadTeamProfile('SPR', this)"><img src="32위 팀 로고/SPR.png" class="sidebar-logo"> SPR</button>
+                <button class="team-list-btn" onclick="loadTeamProfile('VIT', this)"><img src="32위 팀 로고/VIT.png" class="sidebar-logo"> VIT</button>
+                <button class="team-list-btn" onclick="loadTeamProfile('DRX', this)"><img src="32위 팀 로고/DRX.png" class="sidebar-logo"> DRX</button>
+                <button class="team-list-btn" onclick="loadTeamProfile('RRQ', this)"><img src="32위 팀 로고/RRQ.png" class="sidebar-logo"> RRQ</button>
+                <button class="team-list-btn" onclick="loadTeamProfile('PRX', this)"><img src="32위 팀 로고/PRX.png" class="sidebar-logo"> PRX</button>
+                <button class="team-list-btn" onclick="loadTeamProfile('EDG', this)"><img src="32위 팀 로고/EDG.png" class="sidebar-logo"> EDG</button>
+                <button class="team-list-btn" onclick="loadTeamProfile('G2', this)"><img src="32위 팀 로고/G2.png" class="sidebar-logo"> G2</button>
+                <button class="team-list-btn" onclick="loadTeamProfile('FNC', this)"><img src="32위 팀 로고/FNC.png" class="sidebar-logo"> FNC</button>
+                <button class="team-list-btn" onclick="loadTeamProfile('T1', this)"><img src="32위 팀 로고/T1.png" class="sidebar-logo"> T1</button>
+                <button class="team-list-btn" onclick="loadTeamProfile('BOOM', this)"><img src="32위 팀 로고/BOOM.png" class="sidebar-logo"> BOOM</button>
+                <button class="team-list-btn" onclick="loadTeamProfile('LOUD', this)"><img src="32위 팀 로고/LOUD.png" class="sidebar-logo"> LOUD</button>
+                <button class="team-list-btn" onclick="showEmptyTemplate('LEGACY')"><img src="32위 팀 로고/LEGACY.png" class="sidebar-logo"> LEGACY</button>
+                <button class="team-list-btn" onclick="showEmptyTemplate('LEV')"><img src="32위 팀 로고/LEV.png" class="sidebar-logo"> LEV</button>
+                <button class="team-list-btn" onclick="showEmptyTemplate('PVIS')"><img src="32위 팀 로고/PVIS.png" class="sidebar-logo"> PVIS</button>
+                <button class="team-list-btn" onclick="showEmptyTemplate('NRG')"><img src="32위 팀 로고/NRG.png" class="sidebar-logo"> NRG</button>
+                <button class="team-list-btn" onclick="showEmptyTemplate('MOUZ')"><img src="32위 팀 로고/MOUZ.png" class="sidebar-logo"> MOUZ</button>
+                <button class="team-list-btn" onclick="showEmptyTemplate('NS')"><img src="32위 팀 로고/NS.png" class="sidebar-logo"> NS</button>
+                <button class="team-list-btn" onclick="showEmptyTemplate('TEAMLiquid')"><img src="32위 팀 로고/TEAMLiquid.png" class="sidebar-logo"> TEAMLiquid</button>
+                <button class="team-list-btn" onclick="showEmptyTemplate('MG')"><img src="32위 팀 로고/MG.png" class="sidebar-logo"> MG</button>
+                <button class="team-list-btn" onclick="showEmptyTemplate('AURORA')"><img src="32위 팀 로고/AURORA.png" class="sidebar-logo"> AURORA</button>
+                <button class="team-list-btn" onclick="showEmptyTemplate('MIBR')"><img src="32위 팀 로고/MIBR.png" class="sidebar-logo"> MIBR</button>
+                <button class="team-list-btn" onclick="showEmptyTemplate('ASTRALIS')"><img src="32위 팀 로고/ASTRALIS.png" class="sidebar-logo"> ASTRALIS</button>
+                <button class="team-list-btn" onclick="showEmptyTemplate('FAZE')"><img src="32위 팀 로고/FAZE.png" class="sidebar-logo"> FAZE</button>
+                <button class="team-list-btn" onclick="showEmptyTemplate('FURIA')"><img src="32위 팀 로고/FURIA.png" class="sidebar-logo"> FURIA</button>
+                <button class="team-list-btn" onclick="showEmptyTemplate('BB')"><img src="32위 팀 로고/BB.png" class="sidebar-logo"> BB</button>
+                <button class="team-btn" style="display:none;"></button>
+                <button class="team-list-btn" onclick="showEmptyTemplate('FQ')"><img src="32위 팀 로고/FQ.png" class="sidebar-logo"> FQ</button>
+                <button class="team-list-btn" onclick="showEmptyTemplate('PAIN')"><img src="32위 팀 로고/PAIN.png" class="sidebar-logo"> PAIN</button>
+                <button class="team-list-btn" onclick="showEmptyTemplate('GL')"><img src="32위 팀 로고/GL.png" class="sidebar-logo"> GL</button>
+            </div>
+
+            <!-- 오른쪽 메인 보드 -->
+            <div class="profile-main" id="profileMainBox">
+                <!-- JS 데이터 바인딩 구역 -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 1. 대회별 세부 우승 기록 아카이브 데이터베이스
+        const championshipAwardsDB = {
+            'gen_2026': [
+                { title: '2026 A-Tier 퍼시픽 오프닝 토너먼트 우승', date: '2026-02-10', prize: '$100,000 USD', opponent: 'DRX', score: '3 : 1', mvp: 't3xture' }
+            ],
+            'gen_2025': [
+                { title: '2025 S-Tier 글로벌 통합 챔피언십 - 1회차 (4월)', date: '2025년 4월', prize: '상금분할정산 ($1,600,000 USD 총합 중)', opponent: 'PRX', score: '3 : 0', mvp: 'Re2yNy' },
+                { title: '2025 S-Tier 글로벌 통합 챔피언십 - 2회차 (7월)', date: '2025년 7월', prize: '상금분할정산 ($1,600,000 USD 총합 중)', opponent: 'T1', score: '3 : 0', mvp: 'METEOR' },
+                { title: '2025 S-Tier 글로벌 통합 챔피언십 - 3회차 (10월)', date: '2025년 10월', prize: '상금분할정산 ($1,600,000 USD 총합 중)', opponent: '제거된 팀 (역사말소)', score: '3 : 0', mvp: 'Re2yNy' },
+                { title: '2025 A-Tier 퍼시픽 프로 리그 - 1회차', date: '2025년 시즌 연간', prize: '상금분할정산 ($600,000 USD 총합 중)', opponent: 'T1', score: '정규 풀리그 1위 석권', mvp: 't3xture' },
+                { title: '2025 A-Tier 퍼시픽 프로 리그 - 2회차', date: '2025년 시즌 연간', prize: '상금분할정산 ($600,000 USD 총합 중)', opponent: 'DRX', score: '정규 풀리그 1위 석권', mvp: 'Re2yNy' },
+                { title: '2025 A-Tier 퍼시픽 프로 리그 - 3회차', date: '2025년 시즌 연간', prize: '상금분할정산 ($600,000 USD 총합 중)', opponent: 'SEN', score: '정규 풀리그 1위 석권', mvp: 't3xture' },
+                { title: '2025 A-Tier 퍼시픽 프로 리그 - 4회차', date: '2025년 시즌 연간', prize: '상금분할정산 ($600,000 USD 총합 중)', opponent: '제거된 팀 (역사말소)', score: '정규 풀리그 1위 석권', mvp: 'munchikin' }
+            ],
+            'sen_2026': [
+                { title: '2026 S-Tier 글로벌 챔피언십 우승', date: '2026년 메이저 시즌', prize: '공식 상금 정산 기준 적용', opponent: 'Gen.G', score: '3 : 2', mvp: 'TBD' }
+            ],
+            'sen_2025': [
+                { title: '2025 A-Tier 오프시즌 챌린지 컵 우승', date: '2025-10-08', prize: '$100,000 USD', opponent: 'NRG', score: '3 : 1', mvp: 'TenZ' }
+            ],
+            // 💡 FLC 우승 데이터 교정 연동 완료 (2025년 배열 파기 후 2026년으로 단일 통합 수립)
+            'flc_2026': [
+                { title: '2026 A-Tier 프로 토너먼트 우승', date: '2026년 시즌', prize: '공식 상금 정산 기준', opponent: 'DRX', score: '3 : 1', mvp: 'TBD' },
+                { title: '2026 S-Tier 글로벌 메이저 인비테이셔널 우승', date: '2026년 메이저 시즌', prize: '공식 상금 정산 기준', opponent: 'Gen.G', score: '3 : 0', mvp: 'TBD' }
+            ],
+            'navi_2026': [
+                { title: '2026 A-Tier SN Asian Championship 우승', date: '2026-06-24 ~ 06-28', prize: '$150,000 USD', opponent: 'T1', score: '3 : 1', mvp: 'zmjjHK (T-MVP) / Aleksib (F-MVP)' },
+                { title: '2026 A-Tier EMEA 유럽 프로 시리즈 토너먼트 우승', date: '2026년 오프시즌', prize: '공식 상금 배정액', opponent: 'Team Vitality', score: '3 : 1', mvp: 'TBD' }
+            ],
+            'spr_2026': [
+                { title: '2026 A-Tier 동유럽 윈터 마스터즈 우승', date: '2026-01-10', prize: '$100,000 USD', opponent: 'Fnatic', score: '3 : 1', mvp: 'donk' }
+            ],
+            'vit_2026': [
+                { title: '2026 A-Tier EMEA 스프링 인비테이셔널 우승', date: '2026-04-05', prize: '$120,000 USD', opponent: 'Natus Vincere', score: '3 : 1', mvp: 'ZywOo' }
+            ],
+            'rrq_2026': [
+                { title: '2026 A-Tier 동남아시아 마스터즈 시리즈 우승', date: '2026-03-22', prize: '$100,000 USD', opponent: 'Paper Rex', score: '3 : 2', mvp: 'ZEMKIN' }
+            ],
+            'edg_2026': [
+                { title: '2026 A-Tier CN 스프링 마스터즈 우승', date: '2026-04-18', prize: '$100,000 USD', opponent: 'FunPlus Phoenix', score: '3 : 0', mvp: 'CHICHOO' }
+            ],
+            'edg_2025': [
+                { title: '2025 A-Tier CN 인비테이셔널 챌린지 (3회 우승)', date: '2025년 시즌 통합', prize: '총합 $300,000 USD', opponent: 'bilibili Gaming', score: '결승 매치 전체 우승', mvp: 'ZmjjKK (통합 3회 MVP)' }
+            ],
+            'g2_2025': [
+                { title: '2025 A-Tier 아메리카스 어센션 스테이지 우승', date: '2025-07-22', prize: '$120,000 USD', opponent: 'MIBR', score: '3 : 1', mvp: 'huNter-' }
+            ],
+            'fnc_2025': [
+                { title: '2025 A-Tier EMEA 로드 마스터즈 (2회 우승)', date: '2025-09-12', prize: '$180,000 USD', opponent: 'Team Vitality', score: '3 : 2', mvp: 'Chronicle' }
+            ],
+            'loud_2025': [
+                { title: '2025 A-Tier 아메리카스 챌린저스 리그 (2회 우승)', date: '2025-05-14', prize: '$200,000 USD', opponent: 'Leviatán', score: '3 : 0', mvp: 'Saadhak' }
+            ],
+            'loud_2024': [
+                { title: '2024 S-Tier VCT 스페셜 인비테이셔널 초대 우승', date: '2024-11-20', prize: '$400,000 USD', opponent: 'Gen.G', score: '3 : 2', mvp: 'Less' }
+            ]
+        };
+
+        // 2. 팀 정보 메인 데이터베이스
+        const detailedTeamDB = {
+            'GEN': { fullName: 'Gen.G Esports', region: 'Pacific Region', history: '안정적인 경기 운영과 탄탄한 기본 체급을 바탕으로 꾸준히 고득점을 마크 중인 강팀입니다.', years: ['2026', '2025'], dbKeys: ['gen_2026', 'gen_2025'], roster: ['T3XTURE', 'Ash', 'LAKIA', 'METEOR', 'ZynX'], form: ['w', 'w', 'l', 'w', 'w'] },
+            'SEN': { fullName: 'Sentinels', region: 'Americas Region', history: '북미 최고의 인기를 자랑하며, S티어와 A티어 우승컵을 모두 들어 올린 강력한 역사를 가집니다.', years: ['2026', '2025'], dbKeys: ['sen_2026', 'sen_2025'], roster: ['Zekken', 'TenZ', 'Sacy', 'Johnqt', 'Zellsis'], form: ['w', 'l', 'w', 'l', 'w'] },
+            // 💡 FLC 탭 버튼 연도 2026년 단일 노출 처리 완료
+            'FLC': { fullName: 'Team Falcons', region: 'EMEA Region', history: '글로벌 무대에서 막강한 파괴력을 과시하며 명성을 쌓아 올린 강호 구단입니다.', years: ['2026'], dbKeys: ['flc_2026'], roster: ['TESES', 'KYOUSUKE', 'Re2yNy', 'Monesy', 'Niko'], form: ['w', 'w', 'l', 'w', 'l'] },
+            'NAVI': { fullName: 'Natus Vincere', region: 'EMEA Region', history: 'SN Asian Championship 우승팀으로, 에이스 zmjjHK와 지휘관 Aleksib를 중심으로 대전성기를 이어가고 있습니다.', years: ['2026'], dbKeys: ['navi_2026'], roster: ['bit', 'Wonderful', 'Aleksib', 'zmjjHK', 'IM'], form: ['w', 'w', 'w', 'w', 'l'] },
+            'SPR': { fullName: 'Team Spirit', region: 'EMEA Region', history: '강력한 화력의 코어 선수들을 바탕으로 무서운 연승 궤도를 그리는 동유럽의 맹주입니다.', years: ['2026'], dbKeys: ['spr_2026'], roster: ['chopper', 'magixx', 'donk', 'sh1ro', 'zoner'], form: ['l', 'w', 'w', 'w', 'w'] },
+            'VIT': { fullName: 'Team Vitality', region: 'EMEA Region', history: '다양한 메이저 전적과 풍부한 노하우를 바탕으로 명승부를 이끌어내는 전통의 명문 팀입니다.', years: ['2026'], dbKeys: ['vit_2026'], roster: ['apEX', 'ZywOo', 'flameZ', 'Spinx', 'mezii'], form: ['w', 'l', 'w', 'w', 'l'] },
+            'DRX': { fullName: 'DRX', region: 'Pacific Region', history: '한국의 전통 강호로 일관된 전술과 뛰어난 교전 조율을 자랑하는 글로벌 베테랑입니다.', years: [], dbKeys: [], roster: ['stax', 'Buzz', 'MaKo', 'Foxy9', 'Flashback'], form: ['l', 'w', 'l', 'w', 'w'] },
+            'RRQ': { fullName: 'Rex Regum Qeon', region: 'Pacific Region', history: '성공적인 빌드업을 통해 강팀들을 상대로 날카로운 업셋을 수시로 꽂아 넣는 복병입니다.', years: ['2026'], dbKeys: ['rrq_2026'], roster: ['flrrr', 'LJG', 'Estrella', 'Jemkin', 'Monyet'], form: ['w', 'w', 'l', 'l', 'w'] },
+            'PRX': { fullName: 'Paper Rex', region: 'Pacific Region', history: '초공격적인 기동 전술로 글로벌 팬덤을 휘어잡은 스타 팀입니다.', years: [], dbKeys: [], roster: ['f0rsakeN', 'mindfreak', 'd4v41', 'something', 'Jinggg'], form: ['w', 'l', 'w', 'l', 'w'] },
+            'EDG': { fullName: 'EDward Gaming', region: 'CN Region', history: '중국 리그를 선도하며 글로벌 토너먼트 때마다 압도적인 고점을 뿜어내는 명가입니다.', years: ['2026', '2025'], dbKeys: ['edg_2026', 'edg_2025'], roster: ['ZmjjKK', 'CHICHOO', 'nobody', 'Smoggy', 'S1Mon'], form: ['l', 'w', 'w', 'l', 'l'] },
+            'G2': { fullName: 'G2 Esports', region: 'Americas Region', history: '국제 대회 경험을 토대로 결정적인 무대에서 체급을 증명해 내는 구단입니다.', years: ['2025'], dbKeys: ['g2_2025'], roster: ['Snax', 'huNter-', 'leaf', 'trent', 'malbsMd'], form: ['w', 'w', 'l', 'l', 'w'] },
+            'FNC': { fullName: 'Fnatic', region: 'EMEA Region', history: '정교한 전술적 움직임과 끈끈한 팀워크로 유럽 무대를 호령하는 명문 강호입니다.', years: ['2025'], dbKeys: ['fnc_2025'], roster: ['Boaster', 'Chronicle', 'Alfajer', 'Derke', 'Hiro'], form: ['l', 'w', 'w', 'l', 'w'] },
+            'T1': { fullName: 'T1', region: 'Pacific Region', history: 'SN Asian Championship에서 눈부신 준우승 달성.', years: [], dbKeys: [], roster: ['Sayaplayer', 'Carpe', 'Rossy', 'iZu', 'xccurate'], form: ['l', 'w', 'w', 'w', 'l'] },
+            'BOOM': { fullName: 'BOOM Esports', region: 'Pacific Region', history: '신성 dos9의 합류로 완벽한 세대교체 성공.', years: [], dbKeys: [], roster: ['Famouz', 'dos9', 'NcSled', 'BerserX', 'Zells'], form: ['w', 'l', 'w', 'w', 'l'] },
+            'LOUD': { fullName: 'LOUD', region: 'Americas Region', history: '남미 최고의 전술 집중력과 화끈한 교전 화력을 자랑하는 브라질의 자존심입니다.', years: ['2025', '2024'], dbKeys: ['loud_2025', 'loud_2024'], roster: ['Less', 'Saadhak', 'Cauanzin', 'Tuyz', 'pANADA'], form: ['l', 'w', 'w', 'l', 'w'] }
+        };
+
+        // 이하 loadTeamProfile, selectYearAward, showEmptyTemplate 스크립트는 이전 수정본과 완벽 일치 유지
+        function loadTeamProfile(teamKey, btnElement) {
+            const data = detailedTeamDB[teamKey];
+            if (!data) return;
+
+            const buttons = document.querySelectorAll('.team-list-btn');
+            buttons.forEach(b => b.classList.remove('active'));
+            if(btnElement) btnElement.classList.add('active');
+
+            let formHTML = '';
+            data.form.forEach(res => {
+                if(res === 'w') formHTML += `<div class="form-badge form-w">W</div>`;
+                else formHTML += `<div class="form-badge form-l">L</div>`;
+            });
+
+            let rosterHTML = '';
+            data.roster.forEach(player => {
+                let boldStyle = player === 'zmjjHK' || player === 'Aleksib' ? ' style="font-weight:bold; color:#1d4ed8;"' : '';
+                rosterHTML += `<li${boldStyle}>${player}</li>`;
+            });
+
+            let yearsHTML = '';
+            if (data.years && data.years.length > 0) {
+                data.years.forEach((yr, idx) => {
+                    yearsHTML += `<button class="year-tab-btn" onclick="selectYearAward('${data.dbKeys[idx]}', this)">${yr}</button>`;
+                });
+            } else {
+                yearsHTML = `<div class="history-text" style="color:#64748b;">우승 타이틀 기록이 아직 입력되지 않았습니다.</div>`;
+            }
+
+            document.getElementById('profileMainBox').innerHTML = `
+                <div class="profile-header">
+                    <img src="32위 팀 로고/${teamKey}.png" class="profile-logo" alt="${teamKey}">
+                    <div class="profile-title-box">
+                        <h2>${data.fullName}</h2>
+                        <span class="region-badge">${data.region}</span>
+                    </div>
+                </div>
+
+                <div class="info-grid">
+                    <div class="info-block">
+                        <h4 class="block-title">🏆 역대 우승 타이틀</h4>
+                        <div class="years-container">${yearsHTML}</div>
+                    </div>
+                    <div class="info-block">
+                        <h4 class="block-title">📈 최근 5경기 전적 (Form)</h4>
+                        <div class="form-wrapper">${formHTML}</div>
+                    </div>
+                </div>
+
+                <div id="champDetailBox" class="detail-award-box"></div>
+
+                <div class="info-grid" style="margin-top: 25px;">
+                    <div class="info-block">
+                        <h4 class="block-title">👥 소속 Active Roster</h4>
+                        <ul class="roster-list">${rosterHTML}</ul>
+                    </div>
+                    <div class="info-block">
+                        <h4 class="block-title">📝 팀 프로필 및 히스토리</h4>
+                        <p class="history-text">${data.history}</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function selectYearAward(dbKey, btnElement) {
+            const yButtons = document.querySelectorAll('.year-tab-btn');
+            yButtons.forEach(b => b.classList.remove('active'));
+            if(btnElement) btnElement.classList.add('active');
+
+            const awardsList = championshipAwardsDB[dbKey];
+            const detailBox = document.getElementById('champDetailBox');
+            
+            if (!awardsList || awardsList.length === 0) {
+                detailBox.style.display = 'block';
+                detailBox.innerHTML = `<div class="detail-award-title">🥇 우승 대회 세부 내역</div><div style="font-size:13px; color:#64748b;">데이터 준비 중입니다.</div>`;
+                return;
+            }
+
+            detailBox.style.display = 'block';
+            let finalHTML = `<div class="detail-award-title">🥇 우승 대회 세부 내역 (아카이브)</div>`;
+
+            awardsList.forEach((award, idx) => {
+                let divider = idx > 0 ? ' class="multiple-champs-divider"' : '';
+                finalHTML += `
+                    <div${divider}>
+                        <div style="font-weight:bold; font-size:14px; color:#b45309; margin-bottom:8px;">🎯 ${award.title}</div>
+                        <table class="detail-table">
+                            <tr><td class="label-td">대회 일정</td><td>${award.date}</td></tr>
+                            <tr><td class="label-td">상금 총합</td><td><strong>${award.prize}</strong></td></tr>
+                            <tr><td class="label-td">결승 상대</td><td>${award.opponent}</td></tr>
+                            <tr><td class="label-td">최종 스코어</td><td><span style="font-family:monospace; font-weight:bold; background:#fef08a; padding:1px 6px; border-radius:3px;">${award.score}</span></td></tr>
+                            <tr><td class="label-td">대회 MVP</td><td style="color:#b45309; font-weight:500;">${award.mvp}</td></tr>
+                        </table>
+                    </div>
+                `;
+            });
+
+            detailBox.innerHTML = finalHTML;
+        }
+
+        function showEmptyTemplate(teamKey) {
+            const buttons = document.querySelectorAll('.team-list-btn');
+            buttons.forEach(b => b.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+
+            document.getElementById('profileMainBox').innerHTML = `
+                <div class="profile-header">
+                    <img src="32위 팀 로고/${teamKey}.png" class="profile-logo" alt="${teamKey}">
+                    <div class="profile-title-box">
+                        <h2>${teamKey} Esports</h2>
+                        <span class="region-badge">대기 구역 (TBD)</span>
+                    </div>
+                </div>
+                <div class="info-grid">
+                    <div class="info-block">
+                        <h4 class="block-title">🏆 역대 우승 타이틀</h4>
+                        <div class="history-text">- 우승 내역 입력 대기 -</div>
+                    </div>
+                    <div class="info-block">
+                        <h4 class="block-title">📈 최근 5경기 전적 (Form)</h4>
+                        <div class="form-wrapper">
+                            <div class="form-badge form-tbd">?</div>
+                            <div class="form-badge form-tbd">?</div>
+                            <div class="form-badge form-tbd">?</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="info-block">
+                    <h4 class="block-title">📝 안내</h4>
+                    <p class="history-text">해당 팀의 연도별 우승 정보와 상세 대회 스펙 데이터를 대기 중입니다.</p>
+                </div>
+            `;
+        }
+
+        window.onload = function() {
+            loadTeamProfile('GEN', document.querySelector('.team-list-btn.active'));
+        };
+    </script>
+</body>
+</html>
